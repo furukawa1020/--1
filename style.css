@@ -1,0 +1,491 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@100;300;400;700;900&family=Noto+Sans+JP:wght@100;300;400&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f5f3ef;
+  --surface: #faf9f7;
+  --surface2: #f0ede8;
+  --border: #ddd8d0;
+  --accent: #8b6914;
+  --accent2: #4a6e8a;
+  --text: #1a1510;
+  --text-dim: #a09080;
+  --char-color: #1a1510;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.logo {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 15px;
+  font-weight: 300;
+  letter-spacing: 0.3em;
+  color: var(--accent);
+}
+.logo span { color: var(--text-dim); font-size: 11px; letter-spacing: 0.2em; margin-left: 14px; }
+.header-actions { display: flex; gap: 10px; align-items: center; }
+.btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 14px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  transition: all 0.2s;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.active { border-color: var(--accent); color: var(--accent); background: rgba(139,105,20,0.08); }
+
+/* ── Main layout ── */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sidebar-section {
+  padding: 12px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.section-label {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* Input */
+.char-input-wrap { position: relative; display: flex; flex-direction: column; gap: 8px; }
+.sentence-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 15px;
+  font-family: 'Noto Serif JP', serif;
+  padding: 10px 12px;
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.2s;
+  letter-spacing: 0.08em;
+  line-height: 1.8;
+  resize: none;
+  height: 60px;
+}
+.sentence-input:focus { border-color: var(--accent); }
+.sentence-input::placeholder { font-size: 11px; color: var(--text-dim); font-family: 'Noto Sans JP', sans-serif; letter-spacing: 0.1em; }
+.input-hint { font-size: 9px; color: var(--text-dim); letter-spacing: 0.1em; text-align: right; }
+
+/* Font selector */
+.font-options { display: flex; flex-direction: column; gap: 4px; }
+.font-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.font-opt:hover { border-color: #bbb; }
+.font-opt.selected { border-color: var(--accent); background: rgba(139,105,20,0.06); }
+.font-opt .preview {
+  font-size: 22px;
+  color: var(--text);
+  width: 32px;
+  text-align: center;
+  line-height: 1;
+}
+.font-opt .name { font-size: 10px; letter-spacing: 0.1em; color: var(--text-dim); }
+
+/* Sliders */
+.slider-row { display: flex; flex-direction: column; gap: 7px; }
+.slider-item { display: flex; flex-direction: column; gap: 4px; }
+.slider-header { display: flex; justify-content: space-between; }
+.slider-name { font-size: 10px; letter-spacing: 0.1em; color: var(--text-dim); }
+.slider-val { font-size: 10px; color: var(--accent); }
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--border);
+  border-radius: 1px;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Presets */
+.preset-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+.preset-tab {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 1px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  font-family: 'Noto Sans JP', sans-serif;
+  transition: all 0.2s;
+}
+.preset-tab.active { border-color: var(--accent2); color: var(--accent2); }
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+.preset-grid::-webkit-scrollbar { width: 3px; }
+.preset-grid::-webkit-scrollbar-thumb { background: var(--border); }
+.preset-char {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 16px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--text);
+  transition: all 0.15s;
+}
+.preset-char:hover { border-color: var(--accent); color: var(--accent); background: rgba(139,105,20,0.06); }
+.preset-char.active-char { border-color: var(--accent); background: rgba(139,105,20,0.15); }
+
+
+/* ── Center: Projection area ── */
+.center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.projection-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: crosshair;
+  overflow: hidden;
+}
+
+/* Grid overlay */
+.grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.grid-overlay.visible { opacity: 1; }
+.grid-overlay svg { width: 100%; height: 100%; }
+
+/* Main char display */
+.char-display {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 24px;
+}
+.char-main {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 320px;
+  line-height: 1;
+  color: var(--char-color);
+  opacity: 1;
+  transition: color 0.3s, font-size 0.2s, opacity 0.12s;
+  user-select: none;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.06);
+}
+/* 文章モード */
+.char-main.sentence-mode {
+  font-size: 80px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  text-align: center;
+}
+
+/* Bottom bar */
+.bottom-bar {
+  padding: 10px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.bottom-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--text-dim);
+  background: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+.nav-indicator {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+  padding: 0 12px;
+}
+
+/* Sentence strip */
+.sentence-strip {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
+  min-height: 34px;
+}
+.strip-char {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 18px;
+  width: 28px; height: 28px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: all 0.15s;
+  line-height: 1;
+}
+.strip-char:hover { color: var(--text); border-color: var(--border); }
+.strip-char.current {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(139,105,20,0.1);
+}
+.strip-char.done { color: #ccc; }
+
+/* ── Right panel: Reference ── */
+.ref-panel {
+  width: 200px;
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px;
+  gap: 16px;
+  flex-shrink: 0;
+}
+.ref-label {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  align-self: flex-start;
+}
+
+.ref-char-box {
+  width: 140px;
+  height: 140px;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: 2px;
+  background: #fff;
+}
+/* 田字格 lines */
+.ref-char-box::before, .ref-char-box::after {
+  content: '';
+  position: absolute;
+  background: var(--border);
+}
+.ref-char-box::before { width: 1px; height: 100%; left: 50%; transform: translateX(-0.5px); }
+.ref-char-box::after  { height: 1px; width: 100%; top: 50%; transform: translateY(-0.5px); }
+.ref-diag {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ref-diag::before, .ref-diag::after {
+  content: '';
+  position: absolute;
+  background: var(--border);
+  width: 141%;
+  height: 1px;
+  top: 50%;
+  left: -20%;
+  transform-origin: center;
+}
+.ref-diag::before { transform: rotate(45deg); }
+.ref-diag::after  { transform: rotate(-45deg); }
+
+.ref-char {
+  font-family: 'Noto Serif JP', serif;
+  font-size: 96px;
+  line-height: 1;
+  color: var(--accent);
+  position: relative;
+  z-index: 2;
+  user-select: none;
+}
+
+/* Info */
+.ref-info {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ref-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ref-info-key { font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim); }
+.ref-info-val { font-size: 11px; color: var(--text); font-family: 'Noto Serif JP', serif; }
+
+/* Font variants ref */
+.ref-fonts {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ref-font-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+}
+.ref-font-char {
+  font-size: 28px;
+  line-height: 1;
+  color: var(--text);
+  width: 34px;
+  text-align: center;
+}
+.ref-font-name { font-size: 9px; letter-spacing: 0.1em; color: var(--text-dim); }
+
+/* 投影モード切り替えトグル */
+.proj-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.proj-toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  padding: 5px 12px;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: 300;
+  transition: all 0.2s;
+  border-right: 1px solid var(--border);
+}
+.proj-toggle-btn:last-child { border-right: none; }
+.proj-toggle-btn.active { background: rgba(139,105,20,0.1); color: var(--accent); }
+.proj-toggle-btn:hover:not(.active) { color: var(--text); }
+
+/* 文章モード時はnavを隠す */
+body.sent-proj-mode .bottom-controls { display: none; }
+body.sent-proj-mode .sentence-strip { display: none; }
+
+/* Fullscreen mode */
+body.fullscreen-mode header,
+body.fullscreen-mode .sidebar,
+body.fullscreen-mode .ref-panel,
+body.fullscreen-mode .bottom-bar { display: none; }
+body.fullscreen-mode .center { background: #fff; }
+body.fullscreen-mode .char-main { font-size: 85vmin; }
+body.fullscreen-mode .char-main.sentence-mode { font-size: 10vw; }
+.fullscreen-exit {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  display: none;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 6px 12px;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  border-radius: 2px;
+}
+body.fullscreen-mode .fullscreen-exit { display: block; }
+
+/* Color picker hidden input */
+#colorPicker { display: none; }

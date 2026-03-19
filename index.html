@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字投影 — Calligraphy Projector</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Fullscreen exit hint -->
+<button class="fullscreen-exit" onclick="toggleFullscreen()">ESC — 終了</button>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">字投影<span>Calligraphy Projector</span></div>
+  <div class="header-actions">
+    <div class="proj-toggle">
+      <button class="proj-toggle-btn active" id="btnModeChar" onclick="setProjMode('char')">1文字ずつ</button>
+      <button class="proj-toggle-btn" id="btnModeSent" onclick="setProjMode('sentence')">文章全体</button>
+    </div>
+    <button class="btn" id="btnGrid" onclick="toggleGrid()">グリッド</button>
+    <button class="btn" id="btnColor" onclick="document.getElementById('colorPicker').click()">色</button>
+    <input type="color" id="colorPicker" value="#1a1510" oninput="setCharColor(this.value)">
+    <button class="btn" onclick="toggleFullscreen()">投影モード</button>
+  </div>
+</header>
+
+<!-- ── Main ── -->
+<div class="main">
+
+  <!-- ── Sidebar ── -->
+  <div class="sidebar">
+
+    <!-- Input -->
+    <div class="sidebar-section">
+      <div class="section-label">文章・文字入力</div>
+      <div class="char-input-wrap">
+        <textarea class="sentence-input" id="sentenceInput" placeholder="文章や文字を入力&#10;例：今日は良い天気です" oninput="onSentenceInput(this.value)"></textarea>
+        <div class="input-hint" id="inputHint">0 文字</div>
+      </div>
+    </div>
+
+    <!-- Font -->
+    <div class="sidebar-section">
+      <div class="section-label">書体</div>
+      <div class="font-options" id="fontOptions">
+        <div class="font-opt selected" data-font="'Noto Serif JP', serif" onclick="selectFont(this)">
+          <span class="preview" style="font-family:'Noto Serif JP',serif; font-weight:400;">字</span>
+          <span class="name">明朝体</span>
+        </div>
+        <div class="font-opt" data-font="'Noto Serif JP', serif; font-weight:700" onclick="selectFont(this)">
+          <span class="preview" style="font-family:'Noto Serif JP',serif; font-weight:700;">字</span>
+          <span class="name">明朝体 太</span>
+        </div>
+        <div class="font-opt" data-font="'Noto Sans JP', sans-serif" onclick="selectFont(this)">
+          <span class="preview" style="font-family:'Noto Sans JP',sans-serif; font-weight:400;">字</span>
+          <span class="name">ゴシック体</span>
+        </div>
+        <div class="font-opt" data-font="cursive" onclick="selectFont(this)">
+          <span class="preview" style="font-family:cursive;">字</span>
+          <span class="name">筆記体</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sliders -->
+    <div class="sidebar-section">
+      <div class="section-label">表示調整</div>
+      <div class="slider-row">
+        <div class="slider-item">
+          <div class="slider-header">
+            <span class="slider-name">サイズ</span>
+            <span class="slider-val" id="sizeVal">320px</span>
+          </div>
+          <input type="range" min="20" max="1200" value="320" id="sizeSlider" oninput="setSize(this.value)">
+        </div>
+        <div class="slider-item">
+          <div class="slider-header">
+            <span class="slider-name">透明度</span>
+            <span class="slider-val" id="opacVal">100%</span>
+          </div>
+          <input type="range" min="5" max="100" value="100" id="opacSlider" oninput="setOpacity(this.value)">
+        </div>
+        <div class="slider-item">
+          <div class="slider-header">
+            <span class="slider-name">太さ</span>
+            <span class="slider-val" id="weightVal">400</span>
+          </div>
+          <input type="range" min="100" max="900" step="100" value="400" id="weightSlider" oninput="setWeight(this.value)">
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets -->
+    <div class="sidebar-section" style="flex:1; overflow:hidden; display:flex; flex-direction:column;">
+      <div class="section-label">文字セット</div>
+      <div class="preset-tabs">
+        <button class="preset-tab active" onclick="switchPreset(this,'kanji')">常用漢字</button>
+        <button class="preset-tab" onclick="switchPreset(this,'hira')">ひらがな</button>
+        <button class="preset-tab" onclick="switchPreset(this,'kata')">カタカナ</button>
+        <button class="preset-tab" onclick="switchPreset(this,'num')">数字・英字</button>
+      </div>
+      <div class="preset-grid" id="presetGrid"></div>
+    </div>
+
+  </div>
+
+  <!-- ── Center projection area ── -->
+  <div class="center">
+    <div class="projection-area" id="projArea">
+      <div class="grid-overlay" id="gridOverlay">
+        <svg id="gridSvg" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="char-display">
+        <div class="char-main" id="charMain">字</div>
+      </div>
+    </div>
+    <div class="bottom-bar">
+      <div class="sentence-strip" id="sentenceStrip"></div>
+      <div class="bottom-controls">
+        <button class="nav-btn" onclick="navChar(-1)" title="前の文字">&#8592;</button>
+        <span class="nav-indicator" id="navIndicator">— / —</span>
+        <button class="nav-btn" onclick="navChar(1)" title="次の文字">&#8594;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right: Reference panel ── -->
+  <div class="ref-panel">
+    <div class="ref-label">お手本</div>
+    <div class="ref-char-box">
+      <div class="ref-diag"></div>
+      <div class="ref-char" id="refChar">字</div>
+    </div>
+    <div class="ref-info">
+      <div class="ref-info-row">
+        <span class="ref-info-key">読み</span>
+        <span class="ref-info-val" id="refReading">じ</span>
+      </div>
+    </div>
+    <div class="ref-label" style="align-self:flex-start; margin-top:4px;">書体見本</div>
+    <div class="ref-fonts">
+      <div class="ref-font-item">
+        <span class="ref-font-char" id="refF1" style="font-family:'Noto Serif JP',serif; font-weight:300;">字</span>
+        <span class="ref-font-name">明朝 細</span>
+      </div>
+      <div class="ref-font-item">
+        <span class="ref-font-char" id="refF2" style="font-family:'Noto Serif JP',serif; font-weight:700;">字</span>
+        <span class="ref-font-name">明朝 太</span>
+      </div>
+      <div class="ref-font-item">
+        <span class="ref-font-char" id="refF3" style="font-family:'Noto Sans JP',sans-serif; font-weight:400;">字</span>
+        <span class="ref-font-name">ゴシック</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
