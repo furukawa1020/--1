@@ -16,8 +16,53 @@ let currentPreset = 'kanji';
 let presetChars   = Array.from(PRESETS.kanji);
 let currentIndex  = 0;
 let gridVisible   = false;
+let ocrPolling    = null;
 
 function activeChars() { return mode === 'sentence' ? sentence : presetChars; }
+
+// ── OCR Polling ──
+function startOcrPolling() {
+  if (ocrPolling) return;
+  ocrPolling = setInterval(async () => {
+    try {
+      const res = await fetch('/api/ocr_result');
+      if (!res.ok) return;
+      const data = await res.json();
+      
+      const newText = data.text;
+      if (!newText) return;
+
+      // 現在の内容と違う場合のみ更新
+      const currentInput = document.getElementById('sentenceInput').value;
+      
+      // 差分がある、かつ、現在入力中でなければ反映（あくまで簡易実装）
+      // または、OCRモード的なものを作るか。
+      // ここでは「空」の状態から書き始めたときに自動反映するロジックにする、
+      // あるいは常にOCR結果を表示するモードにするか。
+      
+      // シンプルに: 常にOCR結果で上書きする（デモ用途）
+      // ただし、ユーザーがタイプしている最中だと邪魔になるので、
+      // 「OCR同期ボタン」をつけるか、あるいは強制同期するか。
+      // 要件「自分の書いた字を文字認識して字を読み取って投影」
+      // → 常時同期が良さそう。
+      
+      // 変化がなければ何もしない
+      if (mode === 'sentence' && sentence.join('') === newText) return;
+      
+      document.getElementById('sentenceInput').value = newText;
+      onSentenceInput(newText);
+      
+      // 1文字モードで、まだ文字が決まっていない、あるいは更新された場合
+      if (projMode === 'char' && data.top_char) {
+        // 現在の文字と違う、かつセンビシブルな反映
+        // onSentenceInputで自動でセットされるのでここではこれ以上不要かも
+      }
+
+    } catch (e) {
+      console.error('OCR poll error', e); 
+    }
+  }, 1000);
+}
 
 // ── 投影方式切り替え ──
 function setProjMode(m) {
@@ -47,6 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
   drawGrid();
   window.addEventListener('resize', drawGrid);
   window.addEventListener('keydown', onKey);
+  
+  // OCR polling start
+  startOcrPolling();
 });
 
 // ── Sentence input ──
