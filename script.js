@@ -61,7 +61,7 @@ function startOcrPolling() {
     } catch (e) {
       console.error('OCR poll error', e); 
     }
-  }, 1000);
+  }, 200);
 }
 
 // ── 投影方式切り替え ──
