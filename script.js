@@ -1,3 +1,39 @@
+// ── API Base URL ──
+// ローカル実行時は空 ("/api/...") 、Netlify等リモートから使う場合は
+// localStorage に "ocr_api_url" = "http://192.168.x.x:8080" を保存する
+function getApiBase() {
+  const saved = localStorage.getItem('ocr_api_url');
+  if (saved) return saved.replace(/\/$/, '');
+  // ローカルならそのまま相対URL
+  if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return '';
+  // リモート(Netlify)で未設定なら null を返してモーダルを出す
+  return null;
+}
+
+function saveApiUrl(url) {
+  if (url) localStorage.setItem('ocr_api_url', url.replace(/\/$/, ''));
+  else localStorage.removeItem('ocr_api_url');
+}
+
+function openApiSettings() {
+  const current = localStorage.getItem('ocr_api_url') || '';
+  document.getElementById('apiUrlInput').value = current;
+  document.getElementById('apiModal').style.display = 'flex';
+}
+
+function closeApiSettings() {
+  document.getElementById('apiModal').style.display = 'none';
+}
+
+function applyApiUrl() {
+  const val = document.getElementById('apiUrlInput').value.trim();
+  saveApiUrl(val || null);
+  closeApiSettings();
+  // polling再起動
+  if (ocrPolling) { clearInterval(ocrPolling); ocrPolling = null; }
+  startOcrPolling();
+}
+
 // ── Data ──
 const PRESETS = {
   kanji: '春眠不覚暁処処聞啼鳥夜来風雨声花落知多少',
@@ -23,43 +59,30 @@ function activeChars() { return mode === 'sentence' ? sentence : presetChars; }
 // ── OCR Polling ──
 function startOcrPolling() {
   if (ocrPolling) return;
+
+  const base = getApiBase();
+  if (base === null) {
+    // Netlifyで未設定: モーダルを出す
+    setTimeout(openApiSettings, 500);
+    return;
+  }
+
   ocrPolling = setInterval(async () => {
     try {
-      const res = await fetch('/api/ocr_result');
+      const res = await fetch(base + '/api/ocr_result');
       if (!res.ok) return;
       const data = await res.json();
-      
+
       const newText = data.text;
       if (!newText) return;
 
-      // 現在の内容と違う場合のみ更新
-      const currentInput = document.getElementById('sentenceInput').value;
-      
-      // 差分がある、かつ、現在入力中でなければ反映（あくまで簡易実装）
-      // または、OCRモード的なものを作るか。
-      // ここでは「空」の状態から書き始めたときに自動反映するロジックにする、
-      // あるいは常にOCR結果を表示するモードにするか。
-      
-      // シンプルに: 常にOCR結果で上書きする（デモ用途）
-      // ただし、ユーザーがタイプしている最中だと邪魔になるので、
-      // 「OCR同期ボタン」をつけるか、あるいは強制同期するか。
-      // 要件「自分の書いた字を文字認識して字を読み取って投影」
-      // → 常時同期が良さそう。
-      
-      // 変化がなければ何もしない
       if (mode === 'sentence' && sentence.join('') === newText) return;
-      
+
       document.getElementById('sentenceInput').value = newText;
       onSentenceInput(newText);
-      
-      // 1文字モードで、まだ文字が決まっていない、あるいは更新された場合
-      if (projMode === 'char' && data.top_char) {
-        // 現在の文字と違う、かつセンビシブルな反映
-        // onSentenceInputで自動でセットされるのでここではこれ以上不要かも
-      }
 
     } catch (e) {
-      console.error('OCR poll error', e); 
+      console.error('OCR poll error', e);
     }
   }, 200);
 }

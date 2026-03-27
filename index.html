@@ -23,6 +23,7 @@
     <button class="btn" id="btnColor" onclick="document.getElementById('colorPicker').click()">色</button>
     <input type="color" id="colorPicker" value="#1a1510" oninput="setCharColor(this.value)">
     <button class="btn" onclick="toggleFullscreen()">投影モード</button>
+    <button class="btn" id="btnApiSettings" onclick="openApiSettings()" title="OCR接続設定">⚙ 接続</button>
   </div>
 </header>
 
@@ -159,5 +160,27 @@
 </div>
 
 <script src="script.js"></script>
+
+<!-- API 接続設定モーダル -->
+<div id="apiModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9999; align-items:center; justify-content:center;">
+  <div style="background:#faf9f7; border:1px solid #ddd8d0; padding:28px 32px; border-radius:4px; min-width:340px; font-family:'Noto Sans JP',sans-serif;">
+    <div style="font-size:12px; letter-spacing:0.2em; color:#8b6914; margin-bottom:16px;">OCR サーバー接続設定</div>
+    <div style="font-size:11px; color:#a09080; margin-bottom:12px; line-height:1.7;">
+      Netlify からローカル PC の OCR サーバーへ接続します。<br>
+      PC の IP アドレスを入力してください。<br>
+      <span style="color:#4a6e8a;">例: http://192.168.1.10:8080</span>
+    </div>
+    <input id="apiUrlInput" type="text" placeholder="http://192.168.x.x:8080"
+      style="width:100%; padding:8px 10px; border:1px solid #ddd8d0; background:#f0ede8; font-size:13px; border-radius:2px; outline:none; font-family:monospace; margin-bottom:16px;"
+      onkeydown="if(event.key==='Enter') applyApiUrl()">
+    <div style="font-size:10px; color:#a09080; margin-bottom:16px;">
+      ※ローカル(localhost)で使う場合は空欄のままでOK
+    </div>
+    <div style="display:flex; gap:8px; justify-content:flex-end;">
+      <button onclick="closeApiSettings()" style="padding:6px 16px; border:1px solid #ddd8d0; background:none; cursor:pointer; font-size:11px; border-radius:2px; color:#a09080;">キャンセル</button>
+      <button onclick="applyApiUrl()" style="padding:6px 16px; border:1px solid #8b6914; background:#8b6914; color:#fff; cursor:pointer; font-size:11px; border-radius:2px;">接続する</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
