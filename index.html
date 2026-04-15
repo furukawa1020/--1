@@ -19,6 +19,7 @@
       <button class="proj-toggle-btn active" id="btnModeChar" onclick="setProjMode('char')">1文字ずつ</button>
       <button class="proj-toggle-btn" id="btnModeSent" onclick="setProjMode('sentence')">文章全体</button>
     </div>
+    <div class="status-pill offline" id="ocrStatus" title="OCR サーバーの接続状態">OCR 未接続</div>
     <button class="btn" id="btnGrid" onclick="toggleGrid()">グリッド</button>
     <button class="btn" id="btnColor" onclick="document.getElementById('colorPicker').click()">色</button>
     <input type="color" id="colorPicker" value="#1a1510" oninput="setCharColor(this.value)">
