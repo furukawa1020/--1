@@ -44,6 +44,7 @@ const PRESETS = {
 
 // APIで取得した情報をキャッシュする
 const CHAR_INFO = {};
+const OCR_STALE_MS = 8000;
 
 let mode          = 'preset';
 let projMode      = 'char';
@@ -53,8 +54,59 @@ let presetChars   = Array.from(PRESETS.kanji);
 let currentIndex  = 0;
 let gridVisible   = false;
 let ocrPolling    = null;
+let lastOcrSignature = '';
 
 function activeChars() { return mode === 'sentence' ? sentence : presetChars; }
+
+function setStatus(text, state = 'offline') {
+  const el = document.getElementById('ocrStatus');
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove('online', 'busy', 'offline');
+  el.classList.add(state);
+}
+
+function setSentenceState(text) {
+  const chars = Array.from(text).filter(c => c.trim() !== '');
+  mode = 'sentence';
+  sentence = chars;
+  if (currentIndex >= chars.length) currentIndex = 0;
+  return chars;
+}
+
+function applyOcrResult(data) {
+  const meta = data.meta || {};
+  const newText = data.text || '';
+  const topChar = data.top_char || '';
+  const signature = `${meta.last_ocr_time || 0}|${newText}|${topChar}`;
+  if (signature === lastOcrSignature) return;
+  lastOcrSignature = signature;
+
+  const input = document.getElementById('sentenceInput');
+  input.value = newText;
+
+  if (!newText) {
+    document.getElementById('inputHint').textContent = '0 文字';
+    return;
+  }
+
+  const chars = setSentenceState(newText);
+  document.getElementById('inputHint').textContent = chars.length + ' 文字';
+
+  if (projMode === 'sentence') {
+    const cm = document.getElementById('charMain');
+    cm.style.fontSize = document.getElementById('sizeSlider').value + 'px';
+    cm.textContent = newText;
+  } else {
+    const nextIndex = topChar ? chars.indexOf(topChar) : -1;
+    currentIndex = nextIndex >= 0 ? nextIndex : 0;
+    setChar(sentence[currentIndex]);
+  }
+
+  renderStrip();
+  renderPreset();
+  updateNav();
+}
 
 // ── OCR Polling ──
 function startOcrPolling() {
@@ -63,25 +115,32 @@ function startOcrPolling() {
   const base = getApiBase();
   if (base === null) {
     // Netlifyで未設定: モーダルを出す
+    setStatus('OCR 接続先を設定', 'offline');
     setTimeout(openApiSettings, 500);
     return;
   }
 
+  setStatus('OCR 接続中...', 'busy');
   ocrPolling = setInterval(async () => {
     try {
       const res = await fetch(base + '/api/ocr_result');
-      if (!res.ok) return;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-
-      const newText = data.text;
-      if (!newText) return;
-
-      if (mode === 'sentence' && sentence.join('') === newText) return;
-
-      document.getElementById('sentenceInput').value = newText;
-      onSentenceInput(newText);
+      const meta = data.meta || {};
+      const ageMs = meta.last_ocr_time ? Date.now() - meta.last_ocr_time * 1000 : Number.POSITIVE_INFINITY;
+      if (meta.ocr_running) {
+        setStatus('OCR 認識中...', 'busy');
+      } else if (meta.frame_ready && ageMs <= OCR_STALE_MS) {
+        setStatus(data.text ? `OCR ${meta.result_count}件` : 'OCR 接続中', 'online');
+      } else if (meta.frame_ready) {
+        setStatus('OCR 待機中', 'busy');
+      } else {
+        setStatus('カメラ待機中', 'offline');
+      }
+      applyOcrResult(data);
 
     } catch (e) {
+      setStatus('OCR 未接続', 'offline');
       console.error('OCR poll error', e);
     }
   }, 200);
